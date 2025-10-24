@@ -1,0 +1,17 @@
+Намаскар, {{ user.first_name }}!
+
+Спасибо за регистрацию на {{ site_name }}.
+Для активации аккаунта перейди по ссылке:
+{{ activation_url }}
+
+Если ты не регистрировался на {{ site_name }}, просто игнорируй это письмо.
+
+----------------------------------------------------
+
+Namaskar, {{ user.first_name }}!
+
+Thank you for registering at {{ site_name }}.
+To activate your account, please follow this link:
+{{ activation_url }}
+
+If you did not register on {{ site_name }}, please ignore this email.
