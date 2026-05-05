@@ -22,12 +22,13 @@ class User(AbstractUser):
     # avatar_img = models.ImageField(upload_to='avatars/', null=True, blank=True)
     avatar_img = models.ImageField(
         upload_to=avatar_upload_to,
+        default="",
         blank=True,
         null=True
     )
 
-    spirit_name = models.CharField(max_length=255, null=True, blank=True)
-    user_info = models.CharField(max_length=512, null=True, blank=True)
+    spirit_name = models.CharField(max_length=255, default="", null=True, blank=True)
+    user_info = models.CharField(max_length=512, default="", null=True, blank=True)
 
     utc_offset = models.CharField(max_length=6, default='0')
 
@@ -58,7 +59,7 @@ class UserLink(models.Model):
         related_name='links'  # обратная связь: user.links.all()
     )
     name = models.CharField(max_length=20, default='link')
-    url = models.URLField(max_length=255, blank=True, null=True)
+    url = models.CharField(max_length=255, blank=True, null=True)
     public = models.BooleanField(default=False)
 
     def __str__(self) -> str:

@@ -26,7 +26,7 @@ urlpatterns = [
     path('roles/update/', UserRoleUpdateView.as_view(), name='user-role-update'),
     # path('<int:user_id>/roles/update/', UserRoleUpdateView.as_view(), name='user-role-update'),
     
-    path('me/', UserMeView.as_view(), name='me'),
+    # path('me/', UserMeView.as_view(), name='me'), # use Djoser
     path('info/', UserInfoView.as_view(), name='info'),
     path('musicians/', MusiciansListView.as_view(), name='musicians-list'),
     path('moderators/', ModeratorMusiciansListView.as_view(), name='moderators'),

@@ -16,9 +16,19 @@ from datetime import timedelta
 
 
 SITE_NAME = "Akhanda Kirtan of Peace"
-DOMAIN = "localhost:3000"
+
+# DJANGO_ENV = os.getenv('DJANGO_ENV', 'development')                       # 7z a -tzip backend.zip backend\
+# if DJANGO_ENV == 'production':
+#     DOMAIN = "kirtan.duckdns.org"
+# else:
+#     DOMAIN = "localhost:3000"
+
+# print('DOMAIN = ', DOMAIN)
+# DOMAIN = "localhost:3000"
 # DOMAIN = "193.124.114.72"
-# DOMAIN = "kirtan.duckdns.org"
+DOMAIN = "kirtan.duckdns.org"
+
+LOCALHOST3000 = "localhost:3000"
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,14 +128,15 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=500),       # время жизни access-токена
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),        # время жизни refresh-токена
+    # 'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),    # время жизни access-токена
+    'ACCESS_TOKEN_LIFETIME':  timedelta(minutes=12),    # время жизни access-токена
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),        # время жизни refresh-токена
     
     # дополнительные опции:
     'ROTATE_REFRESH_TOKENS': False,                     # False — один refresh-токен можно использовать многократно в течение всего срока его жизни.
                                                         # True — при каждом обновлении (refresh) access-токена будет автоматически создаваться новый refresh
     
-    'BLACKLIST_AFTER_ROTATION': False,                  # False — старые refresh-токены не блокируются, даже если был выдан новый
+    'BLACKLIST_AFTER_ROTATION': True,                  # False — старые refresh-токены не блокируются, даже если был выдан новый
                                                         # True — старые refresh-токены добавляются в черный список после использования
 }
 
@@ -161,7 +172,7 @@ DJOSER = {
         # "user_create":  "users.serializers.UserCreateSerializer",
         "current_user":   "users.serializers.UserSerializer",
         "user":           "users.serializers.UserSerializer",
-        # 'token_create': 'yourapp.serializers.CustomTokenCreateSerializer', #  при авторизации отправлять сигнал user_logged_in
+        # "token_create":   "users.serializers.CustomTokenCreateSerializer", 
     },
 
     "SEND_ACTIVATION_EMAIL": True,
@@ -261,13 +272,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DEFAULT_FROM_EMAIL = 'site-akhanda-kirtan@yandex.ru'
 
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+if DOMAIN == LOCALHOST3000:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-# EMAIL_HOST = 'smtp.yandex.ru'
-# EMAIL_PORT = 465
-# EMAIL_USE_TLS = False
-# EMAIL_USE_SSL = True
-# EMAIL_HOST_USER = 'site-akhanda-kirtan@yandex.ru'
-# EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD_KIRTAN_SITE']
+    EMAIL_HOST = 'smtp.yandex.ru'
+    EMAIL_PORT = 465
+    EMAIL_USE_TLS = False
+    EMAIL_USE_SSL = True
+    EMAIL_HOST_USER = 'site-akhanda-kirtan@yandex.ru'
+    EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD_KIRTAN_SITE']
 
+
+PAGINATION_NEWS_PAGE_SIZE = 5

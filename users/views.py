@@ -5,6 +5,7 @@ from .models import User
 from .serializers import (
     ALLOWED_FIELDS,
     # RegisterSerializer,
+    UserSerializer,
     UserMeSerializer,
     MusicianListSerializer,
     ModeratorMusicianSerializer,
@@ -41,11 +42,17 @@ ALLOWED_ROLE_FIELDS = [
 
 
 class UserMeView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    # def get(self, request):
+    #     serializer = UserMeSerializer(request.user)
+    #     return Response(serializer.data)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        serializer = UserMeSerializer(request.user)
-        return Response(serializer.data)
+    def get_object(self):
+        return self.request.user
     
     
 
@@ -57,7 +64,6 @@ class MusiciansListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # return User.objects.filter(is_musician=True, is_active=True).order_by('username')
         return (
             User.objects.filter(groups__name="Musicians", is_active=True)
             .distinct()
@@ -134,12 +140,16 @@ class UserInfoView(APIView):
 
 User = get_user_model()
 
+
+# 🔴🟠🟡🟢
 class UserInfoUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
         user = request.user
         data = request.data
+
+        print('UserInfoUpdateView           00          data= ', data)
 
         if not data or len(data) != 1:
             return Response({'detail': 'PUT request must contain exactly one field to update.'}, status=400)
@@ -149,13 +159,14 @@ class UserInfoUpdateView(APIView):
         if field_name not in ALLOWED_FIELDS:
             return Response({'detail': f'Field "{field_name}" is not allowed to be updated.'}, status=400)
 
-        print('UserInfoUpdateView           11          ', field_name, ' --- ', value, '---             user=       ', user)
+        print('UserInfoUpdateView           11          ')
+        # print('UserInfoUpdateView           11          ', field_name, ' --- ', value, '---             user=       ', user)
 
         setattr(user, field_name, value)
         user.save()
 
 
-        print('UserInfoUpdateView           22          ', field_name, ' --- ', value)
+        # print('UserInfoUpdateView           22          ', field_name, ' --- ', value)
         
         
 

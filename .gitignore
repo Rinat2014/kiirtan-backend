@@ -226,3 +226,6 @@ cython_debug/
 
 __pycache__/
 *.sqlite3
+
+# не загружать архивы
+backend.zip

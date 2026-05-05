@@ -69,7 +69,7 @@ class ModeratorSlotViewSet(viewsets.ModelViewSet):
         data = request.data
         is_regular = data.get('is_regular', False)
         times = data.get('time')
-        user_uuid = data.get('moderator_id')
+        user_id = data.get('moderator_id')
         
         print(f'create moderator ================================================================================ 1')
         print(f'data: {data}')
@@ -86,27 +86,40 @@ class ModeratorSlotViewSet(viewsets.ModelViewSet):
             # Обработка множественной записи
             if isinstance(times, list):
                 created_slots = []
+                skipped_slots = []
 
                 for time_str in times:
                     try:
                         time = make_aware(datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S"))
                     except ValueError:
-                        return Response({"detail": f"Неверный формат времени: {time_str}"}, status=status.HTTP_400_BAD_REQUEST)
+                        skipped_slots.append(time_str)
+                        continue  # Просто пропускаем
+                        # return Response({"detail": f"Неверный формат времени: {time_str}"}, status=status.HTTP_400_BAD_REQUEST)
 
                     if ModeratorSlot.objects.filter(time=time).exists():
-                        return Response({"detail": f"Таймслот {time_str} уже занят."}, status=status.HTTP_400_BAD_REQUEST)
+                        skipped_slots.append(time_str)
+                        continue  # Просто пропускаем
+                        # return Response({"detail": f"Таймслот {time_str} уже занят."}, status=status.HTTP_400_BAD_REQUEST)
 
                     slot_data = {
                         'time': time,
                         'is_regular': True,
-                        'moderator_id': user_uuid
+                        'moderator_id': user_id
                     }
 
                     serializer = self.get_serializer(data=slot_data)
-                    serializer.is_valid(raise_exception=True)
-                    created_slots.append(serializer.save())
+                    if serializer.is_valid():
+                        created_slots.append(serializer.save())
+                    # serializer.is_valid(raise_exception=True)
+                    # created_slots.append(serializer.save())
 
-                return Response(self.get_serializer(created_slots, many=True).data, status=status.HTTP_201_CREATED)
+                # Возвращаем созданные слоты и список пропущенных
+                response_data = {
+                    "created": self.get_serializer(created_slots, many=True).data,
+                    "skipped": skipped_slots
+                }
+
+                return Response(response_data, status=status.HTTP_201_CREATED)
 
         else:
             # Одиночная запись
@@ -153,45 +166,45 @@ class ModeratorSlotViewSet(viewsets.ModelViewSet):
     
 
     # Кастомное удаление регулярки
-    @action(detail=False, methods=['delete'], url_path='delete-regular', permission_classes=[IsModeratorOrAdmin])
-    def delete_regular(self, request):
-        time_str = request.query_params.get('time')  # "15:00"
-        date_str = request.query_params.get('date')  # "2025-05-03"
-        moderator_id = request.query_params.get('moderator_id', None)
+    # @action(detail=False, methods=['delete'], url_path='delete-regular', permission_classes=[IsModeratorOrAdmin])
+    # def delete_regular(self, request):
+    #     time_str = request.query_params.get('time')  # "15:00"
+    #     date_str = request.query_params.get('date')  # "2025-05-03"
+    #     moderator_id = request.query_params.get('moderator_id', None)
 
-        # 🔒 Проверка параметров
-        if not time_str or not date_str:
-            return Response({'detail': 'Параметры `time` и `date` обязательны.'}, status=status.HTTP_400_BAD_REQUEST)
+    #     # 🔒 Проверка параметров
+    #     if not time_str or not date_str:
+    #         return Response({'detail': 'Параметры `time` и `date` обязательны.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        date = parse_date(date_str)
-        if not date:
-            return Response({'detail': 'Неверный формат даты. Используйте YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
+    #     date = parse_date(date_str)
+    #     if not date:
+    #         return Response({'detail': 'Неверный формат даты. Используйте YYYY-MM-DD.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # 🔐 Проверка прав
-        if moderator_id:
-            if not request.user.is_staff and not request.user.is_superuser:
-                return Response({'detail': 'У вас нет прав удалять чужие слоты.'}, status=status.HTTP_403_FORBIDDEN)
-        else:
-            moderator_id = request.user.id
+    #     # 🔐 Проверка прав
+    #     if moderator_id:
+    #         if not request.user.is_staff and not request.user.is_superuser:
+    #             return Response({'detail': 'У вас нет прав удалять чужие слоты.'}, status=status.HTTP_403_FORBIDDEN)
+    #     else:
+    #         moderator_id = request.user.id
 
-        # 🧠 Вычисляем день недели по дате
-        # date.weekday(): понедельник = 0, воскресенье = 6
-        # Django ExtractWeekDay: воскресенье = 1, понедельник = 2, ..., суббота = 7
-        django_weekday = (date.weekday() + 2) % 7 or 7
+    #     # 🧠 Вычисляем день недели по дате
+    #     # date.weekday(): понедельник = 0, воскресенье = 6
+    #     # Django ExtractWeekDay: воскресенье = 1, понедельник = 2, ..., суббота = 7
+    #     django_weekday = (date.weekday() + 2) % 7 or 7
 
-        # 🔍 Фильтруем слоты по дню недели, времени и дате
-        qs = ModeratorSlot.objects.filter(
-            moderator_id=moderator_id,
-            is_regular=True,
-            time__date__gte=date,
-            time__time=time_str
-        ).annotate(
-            weekday=ExtractWeekDay('time')
-        ).filter(
-            weekday=django_weekday
-        )
+    #     # 🔍 Фильтруем слоты по дню недели, времени и дате
+    #     qs = ModeratorSlot.objects.filter(
+    #         moderator_id=moderator_id,
+    #         is_regular=True,
+    #         time__date__gte=date,
+    #         time__time=time_str
+    #     ).annotate(
+    #         weekday=ExtractWeekDay('time')
+    #     ).filter(
+    #         weekday=django_weekday
+    #     )
 
-        deleted_count = qs.count()
-        qs.delete()
+    #     deleted_count = qs.count()
+    #     qs.delete()
 
-        return Response({'detail': f'Удалено {deleted_count} регулярных слотов.'}, status=status.HTTP_200_OK)
+    #     return Response({'detail': f'Удалено {deleted_count} регулярных слотов.'}, status=status.HTTP_200_OK)

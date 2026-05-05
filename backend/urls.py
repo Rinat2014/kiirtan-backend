@@ -48,6 +48,7 @@ urlpatterns = [
 
     path("api/groups/", GroupListView.as_view(), name="group-list"),
 
+    path('api/', include('news.urls')),
     
     
     # DJOSER

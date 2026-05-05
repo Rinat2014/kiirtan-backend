@@ -46,6 +46,8 @@ class UserAdmin(admin.ModelAdmin):
         "is_active",
         "is_staff",
         "get_groups",
+        "last_login",
+        "date_joined",
     )
     list_filter = ("is_active", "groups")  # фильтровать по группам удобно
     inlines = [UserLinkInline]  # добавил inline для ссылок
@@ -69,7 +71,7 @@ class UserAdmin(admin.ModelAdmin):
 
 @admin.register(UserLink)
 class UserLinkAdmin(admin.ModelAdmin):
-    list_display = ("get_username", "name", "url")
+    list_display = ("get_username", "name", "url", "public")
     list_filter = ("user__username",)
     
     def get_queryset(self, request):
@@ -77,7 +79,7 @@ class UserLinkAdmin(admin.ModelAdmin):
     
     def get_username(self, obj):
         return obj.user.username
-    get_username.short_description = 'User'
+    get_username.short_description = 'User Name'
     get_username.admin_order_field = 'user__username'
 
 # @admin.register(UserLink)
