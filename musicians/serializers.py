@@ -19,5 +19,5 @@ class MusicSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = MusicSlot
         fields = '__all__'
-        # или явно: fields = ['id', 'musician', 'musician_detail', '...']
+        # fields = ['id', 'musician', 'musician_detail', '...']
 

@@ -31,3 +31,15 @@ class IsMusicianOwnerOrModerator(permissions.BasePermission):
             request.user.is_staff or
             request.user.groups.filter(name='Moderators').exists()
         )
+
+# class IsMusician(permissions.BasePermission):
+#     """
+#     Разрешение только для пользователей с ролью музыканта
+#     """
+#     def has_permission(self, request, view):
+#         # return request.user.is_authenticated and request.user.role == 'musician'
+#         return request.user.is_authenticated and (
+#             request.user.is_staff or
+#             request.user.groups.filter(name='Musicians').exists()
+#             # request.user.groups.filter(name='Moderators').exists()
+#         )

@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = ModeratorSlot
 #         fields = '__all__'
-#         # или явно: fields = ['id', 'musician', 'musician_detail', '...']
+#         # fields = ['id', 'musician', 'musician_detail', '...']
 
 
 

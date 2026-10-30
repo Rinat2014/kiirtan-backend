@@ -186,5 +186,64 @@ class MusicSlotViewSet(viewsets.ModelViewSet):
         return Response({'detail': 'Слот успешно удалён.'}, status=status.HTTP_204_NO_CONTENT)
     
 
+    # # Все записи текущего пользователя от текущего времени
+    # @action(detail=False, methods=['get'], url_path='my-schedule-kiirtans', permission_classes=[IsAuthenticated])
+    # def my_schedule_kiirtans(self, request):
+    #     user = request.user
+    #     current_time = now()
+        
+    #     # Получаем все текущие и последующие слоты пользователя
+    #     queryset = MusicSlot.objects.filter(
+    #         musician=user,
+    #         time__gte=current_time
+    #     ).order_by('time')
+        
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='my-schedule-kiirtans')
+    def my_schedule_kiirtans(self, request):
+        """
+        GET /api/music-slots/my-schedule-kiirtans/
+        """
+        user = request.user
+        current_time = now()
+        
+        queryset = MusicSlot.objects.filter(
+            musician=user,
+            time__gte=current_time
+        ).order_by('time')
+        
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
+
+# musicians/views.py
+
+# class MyScheduleViewSet(viewsets.ReadOnlyModelViewSet):
+#     """ViewSet для просмотра личного расписания музыканта"""
+#     serializer_class = MusicSlotSerializer
+#     # permission_classes = [permissions.IsAuthenticated]
+    
+#     def get_queryset(self):
+#         """
+#         Возвращает слоты текущего пользователя от текущего момента до последнего
+#         """
+#         user = self.request.user
+#         current_time = now()
+        
+#         return MusicSlot.objects.filter(
+#             musician=user,
+#             time__gte=current_time
+#         ).select_related('musician').order_by('time')
+#         # ).order_by('time')
+    
+#     def list(self, request, *args, **kwargs):
+#         """GET /api/my-schedule-kiirtans/"""
+#         return super().list(request, *args, **kwargs)
